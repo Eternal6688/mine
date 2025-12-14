@@ -217,18 +217,17 @@
     <audio id="scareAudio" preload="auto"></audio>
     
     <script>
-        // 网站标题数组
+        // 修复数组语法错误 - 使用英文逗号
         const siteTitles = [
             "碧蓝萝莉", 
             "高清无码", 
             "人妻优选"
         ];
         
-        // 正常图片数组
         const normalImages = [
             "1.jpg",
-"2.jpg",
-"3.jpg"
+            "2.jpg",
+            "3.jpg"
         ];
         
         // 使用本地文件
@@ -246,6 +245,7 @@
         // 状态变量
         let isLoaded = false;
         let isScaring = false;
+        let userInteracted = false; // 记录用户是否已交互
         
         // 预加载素材
         function preloadAssets() {
@@ -330,6 +330,12 @@
             siteTitleElement.textContent = siteTitles[randomIndex];
         }
         
+        // 随机切换正常图片
+        function changeNormalImage() {
+            const randomIndex = Math.floor(Math.random() * normalImages.length);
+            mainImageElement.src = normalImages[randomIndex];
+        }
+        
         // 重置GIF播放
         function resetGifPlayback() {
             scareOverlay.innerHTML = '';
@@ -357,12 +363,15 @@
             scareAudio.volume = 1.0;
             scareAudio.currentTime = 0;
             
-            const playPromise = scareAudio.play();
-            
-            if (playPromise !== undefined) {
-                playPromise.catch(e => {
-                    console.log("音频播放失败:", e);
-                });
+            // 只有在用户已交互的情况下才尝试播放音频
+            if (userInteracted) {
+                const playPromise = scareAudio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.log("音频播放失败:", e);
+                    });
+                }
             }
             
             // 1.5秒后隐藏惊吓图片
@@ -375,6 +384,20 @@
                 
                 isScaring = false;
             }, 1500);
+        }
+        
+        // 用户交互处理
+        function handleUserInteraction() {
+            if (!userInteracted) {
+                userInteracted = true;
+                // 用户第一次交互后，可以播放音频
+                scareAudio.play().then(() => {
+                    scareAudio.pause();
+                    scareAudio.currentTime = 0;
+                }).catch(e => {
+                    console.log("首次音频播放测试失败:", e);
+                });
+            }
         }
         
         // 点击事件处理
@@ -433,6 +456,10 @@
             // 添加事件监听
             document.addEventListener('click', handleClick);
             document.addEventListener('touchstart', handleTouch);
+            
+            // 添加用户交互监听，用于解锁音频自动播放
+            document.addEventListener('click', handleUserInteraction, { once: true });
+            document.addEventListener('touchstart', handleUserInteraction, { once: true });
         }
         
         // 页面加载完成后初始化
