@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机图片分享</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 20px;
+            max-width: 800px;
+        }
+        
+        #site-title {
+            font-size: 3rem;
+            color: #4a9eff;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(74, 158, 255, 0.7);
+            transition: color 0.3s;
+        }
+        
+        .image-container {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            margin: 0 auto 30px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        #main-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        
+        .image-container:hover #main-image {
+            transform: scale(1.05);
+        }
+        
+        .click-hint {
+            color: #888;
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+        
+        /* 惊吓覆盖层 */
+        .scare-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .scare-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        /* 音频控件隐藏 */
+        #scareAudio {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            #site-title {
+                font-size: 2.2rem;
+            }
+            
+            .image-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="site-title">自然风光图库</h1>
+        
+        <div class="image-container">
+            <img id="main-image" src="https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="风景图片">
+        </div>
+        
+        <p class="click-hint">点击任意位置切换图片</p>
+    </div>
+    
+    <!-- 惊吓覆盖层 -->
+    <div class="scare-overlay" id="scareOverlay">
+        <img class="scare-image" id="scareImage" src="" alt="惊吓图片">
+    </div>
+    
+    <!-- 音频元素 -->
+    <audio id="scareAudio" preload="auto">
+        <source src="" type="audio/mpeg">
+    </audio>
+    
+    <script>
+        // 网站标题数组
+        const siteTitles = [
+            "自然风光图库", 
+            "旅行摄影分享", 
+            "世界美景收藏", 
+            "风景摄影精选",
+            "视觉艺术图库",
+            "环球美景瞬间",
+            "摄影作品展示"
+        ];
+        
+        // 正常图片URL数组
+        const normalImages = [
+            "https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // 山景
+            "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // 森林
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // 山脉
+            "https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // 星空
+            "https://images.unsplash.com/photo-1512273222628-4daea6e55abb?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // 瀑布
+            "https://images.unsplash.com/photo-1439066615861-d1af74d74000?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // 湖泊
+            "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"  // 海滩
+        ];
+        
+        // 惊吓素材URL - 请替换为您自己的素材
+        const scareImageUrl = "https://i.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif"; // 示例惊吓GIF
+        const scareAudioUrl = "https://assets.mixkit.co/sfx/preview/mixkit-horror-scream-2896.mp3"; // 示例惊吓音频
+        
+        // 页面元素
+        const siteTitleElement = document.getElementById('site-title');
+        const mainImageElement = document.getElementById('main-image');
+        const scareOverlay = document.getElementById('scareOverlay');
+        const scareImage = document.getElementById('scareImage');
+        const scareAudio = document.getElementById('scareAudio');
+        
+        // 初始化页面
+        function initPage() {
+            // 设置音频
+            scareAudio.src = scareAudioUrl;
+            scareAudio.volume = 1.0; // 最大音量
+            
+            // 设置惊吓图片
+            scareImage.src = scareImageUrl;
+            
+            // 设置初始标题
+            changeSiteTitle();
+        }
+        
+        // 随机切换网站标题
+        function changeSiteTitle() {
+            const randomIndex = Math.floor(Math.random() * siteTitles.length);
+            siteTitleElement.textContent = siteTitles[randomIndex];
+        }
+        
+        // 随机切换正常图片
+        function changeNormalImage() {
+            const randomIndex = Math.floor(Math.random() * normalImages.length);
+            mainImageElement.src = normalImages[randomIndex];
+        }
+        
+        // 触发惊吓效果
+        function triggerScare() {
+            // 显示惊吓图片
+            scareOverlay.style.display = 'flex';
+            
+            // 播放惊吓音频（音量最大）
+            scareAudio.volume = 1.0;
+            scareAudio.currentTime = 0;
+            scareAudio.play().catch(e => {
+                console.log("音频播放失败:", e);
+                // 如果自动播放被阻止，用户交互后可以播放
+            });
+            
+            // 1.5秒后隐藏惊吓图片
+            setTimeout(() => {
+                scareOverlay.style.display = 'none';
+                
+                // 停止音频
+                scareAudio.pause();
+                scareAudio.currentTime = 0;
+            }, 1500);
+        }
+        
+        // 点击事件处理
+        function handleClick() {
+            // 切换网站标题
+            changeSiteTitle();
+            
+            // 切换正常图片
+            changeNormalImage();
+            
+            // 触发惊吓效果
+            triggerScare();
+        }
+        
+        // 添加点击事件监听
+        document.addEventListener('click', handleClick);
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initPage);
+        
+        // 确保音频在用户交互后可以播放
+        document.addEventListener('touchstart', function() {
+            // 空函数，确保有用户交互
+        }, { once: true });
+        
+        document.addEventListener('click', function() {
+            // 空函数，确保有用户交互
+        }, { once: true });
+    </script>
+</body>
+</html>
