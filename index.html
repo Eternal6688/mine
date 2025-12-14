@@ -226,8 +226,8 @@
         
         // 正常图片数组
         const normalImages = [
-            "1.jpg"，
-"2.jpg"，
+            "1.jpg",
+"2.jpg",
 "3.jpg"
         ];
         
@@ -385,8 +385,14 @@
                 return;
             }
             
+            // 标记用户已交互
+            handleUserInteraction();
+            
             // 切换网站标题
             changeSiteTitle();
+            
+            // 切换正常图片
+            changeNormalImage();
             
             // 触发惊吓效果
             triggerScare();
@@ -399,8 +405,14 @@
                 return;
             }
             
+            // 标记用户已交互
+            handleUserInteraction();
+            
             // 切换网站标题
             changeSiteTitle();
+            
+            // 切换正常图片
+            changeNormalImage();
             
             // 触发惊吓效果
             triggerScare();
