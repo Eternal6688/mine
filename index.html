@@ -2,14 +2,13 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>精选美图分享</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机图片分享</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
         
         body {
@@ -25,84 +24,33 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             padding: 20px;
-            touch-action: manipulation;
-        }
-        
-        /* 加载页面样式 */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            transition: opacity 0.5s;
-        }
-        
-        .loading-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #4a9eff;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .loading-text {
-            font-size: 1.5rem;
-            color: #fff;
         }
         
         .container {
+            max-width: 800px;
             width: 100%;
-            max-width: 500px;
             background: rgba(0, 0, 0, 0.4);
             border-radius: 20px;
-            padding: 20px;
+            padding: 30px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
             position: relative;
             z-index: 1;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.8s, transform 0.8s;
-        }
-        
-        .container.visible {
-            opacity: 1;
-            transform: translateY(0);
         }
         
         #site-title {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
+            font-size: 3.5rem;
+            margin-bottom: 30px;
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
             color: #fff;
             transition: all 0.3s ease;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
         }
         
         .image-container {
             width: 100%;
-            height: 60vh;
-            max-height: 400px;
-            margin: 0 auto 20px;
+            height: 400px;
+            margin: 0 auto 30px;
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
@@ -119,9 +67,27 @@
         
         .click-hint {
             color: rgba(255, 255, 255, 0.8);
-            font-size: 1.1rem;
-            margin-top: 15px;
+            font-size: 1.2rem;
+            margin-top: 20px;
             text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            color: #ff6b6b;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        }
+        
+        .counter span {
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin-left: 5px;
         }
         
         /* 惊吓覆盖层 */
@@ -139,8 +105,8 @@
         }
         
         .scare-image {
-            width: 100%;
-            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
             object-fit: contain;
         }
         
@@ -151,7 +117,7 @@
         
         .floating-text {
             position: absolute;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             color: rgba(255, 255, 255, 0.7);
             animation: float 15s infinite linear;
             pointer-events: none;
@@ -167,57 +133,42 @@
             }
         }
         
-        /* 移动设备优化 */
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
             #site-title {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
             
             .image-container {
-                height: 50vh;
+                height: 300px;
             }
-            
-            .click-hint {
-                font-size: 1rem;
-            }
-            
-            .container {
-                padding: 15px;
-            }
-        }
-        
-        /* 防止用户缩放 */
-        body {
-            -webkit-text-size-adjust: none;
-            text-size-adjust: none;
         }
     </style>
 </head>
 <body>
-    <!-- 加载页面 -->
-    <div class="loading-screen" id="loadingScreen">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">加载中，请稍候...</div>
-    </div>
+    <div class="counter">点击次数: <span id="clickCount">0</span></div>
     
-    <div class="container" id="mainContainer">
-        <h1 id="site-title">碧蓝萝莉</h1>
+    <div class="container">
+        <h1 id="site-title">风景欣赏</h1>
         
         <div class="image-container">
-            
+            <img id="main-image" src="https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="风景图片">
         </div>
         
         <p class="click-hint">点击任意位置切换图片</p>
     </div>
     
-    <!-- 惊吓覆盖层 - 初始为空，每次点击重新创建 -->
-    <div class="scare-overlay" id="scareOverlay"></div>
+    <!-- 惊吓覆盖层 -->
+    <div class="scare-overlay" id="scareOverlay">
+        <img class="scare-image" id="scareImage" src="" alt="惊吓图片">
+    </div>
     
     <!-- 音频元素 -->
-    <audio id="scareAudio" preload="auto"></audio>
+    <audio id="scareAudio" preload="auto">
+        <source src="" type="audio/mpeg">
+    </audio>
     
     <script>
-        // 修复数组语法错误 - 使用英文逗号
+        // 网站标题数组
         const siteTitles = [
             "碧蓝萝莉", 
             "高清无码", 
@@ -230,7 +181,7 @@
             "3.jpg"
         ];
         
-        // 使用本地文件
+        // 使用本地文件 - 确保文件与HTML在同一目录
         const scareImageUrl = "514.gif";
         const scareAudioUrl = "114.mp3";
         
@@ -238,87 +189,39 @@
         const siteTitleElement = document.getElementById('site-title');
         const mainImageElement = document.getElementById('main-image');
         const scareOverlay = document.getElementById('scareOverlay');
+        const scareImage = document.getElementById('scareImage');
         const scareAudio = document.getElementById('scareAudio');
-        const mainContainer = document.getElementById('mainContainer');
-        const loadingScreen = document.getElementById('loadingScreen');
+        const clickCountElement = document.getElementById('clickCount');
         
-        // 状态变量
-        let isLoaded = false;
-        let isScaring = false;
-        let userInteracted = false; // 记录用户是否已交互
+        // 点击计数器
+        let clickCount = 0;
         
-        // 预加载素材
-        function preloadAssets() {
-            let loadedCount = 0;
-            const totalAssets = 2; // 音频和GIF
+        // 初始化页面
+        function initPage() {
+            // 设置音频
+            scareAudio.src = scareAudioUrl;
+            scareAudio.volume = 1.0; // 最大音量
             
-            // 预加载音频
-            const audio = new Audio();
-            audio.preload = "auto";
-            audio.volume = 1.0;
-            audio.src = scareAudioUrl;
+            // 设置惊吓图片
+            scareImage.src = scareImageUrl;
             
-            audio.addEventListener('canplaythrough', () => {
-                loadedCount++;
-                console.log("音频加载完成");
-                checkAllAssetsLoaded();
-            });
+            // 设置初始标题
+            changeSiteTitle();
             
-            audio.addEventListener('error', (e) => {
-                console.error("音频加载失败:", e);
-                loadedCount++;
-                checkAllAssetsLoaded();
-            });
-            
-            // 预加载GIF
-            const gifImage = new Image();
-            gifImage.src = scareImageUrl;
-            
-            gifImage.onload = () => {
-                loadedCount++;
-                console.log("GIF加载完成");
-                checkAllAssetsLoaded();
-            };
-            
-            gifImage.onerror = () => {
-                console.error("GIF加载失败");
-                loadedCount++;
-                checkAllAssetsLoaded();
-            };
-            
-            // 预加载正常图片
-            normalImages.forEach(imgSrc => {
-                const img = new Image();
-                img.src = imgSrc;
-                img.onload = () => console.log(`图片 ${imgSrc} 加载完成`);
-                img.onerror = () => console.error(`图片 ${imgSrc} 加载失败`);
-            });
-            
-            function checkAllAssetsLoaded() {
-                if (loadedCount >= totalAssets) {
-                    setTimeout(() => {
-                        isLoaded = true;
-                        loadingScreen.classList.add('hidden');
-                        
-                        setTimeout(() => {
-                            mainContainer.classList.add('visible');
-                            createFloatingText();
-                        }, 300);
-                    }, 1000);
-                }
-            }
+            // 创建浮动文字
+            createFloatingText();
         }
         
         // 创建浮动文字
         function createFloatingText() {
-            const texts = ["点击查看", "切换图片", "高清美图", "发现精彩"];
-            for (let i = 0; i < 8; i++) {
+            const texts = ["点击查看", "切换图片", "随机风景", "发现美景", "高清图库"];
+            for (let i = 0; i < 10; i++) {
                 const text = document.createElement('div');
                 text.className = 'floating-text';
                 text.textContent = texts[Math.floor(Math.random() * texts.length)];
                 text.style.left = `${Math.random() * 100}%`;
                 text.style.animationDuration = `${15 + Math.random() * 20}s`;
-                text.style.fontSize = `${1 + Math.random() * 1.2}rem`;
+                text.style.fontSize = `${1 + Math.random() * 1.5}rem`;
                 text.style.opacity = `${0.3 + Math.random() * 0.5}`;
                 document.body.appendChild(text);
             }
@@ -336,80 +239,33 @@
             mainImageElement.src = normalImages[randomIndex];
         }
         
-        // 重置GIF播放
-        function resetGifPlayback() {
-            scareOverlay.innerHTML = '';
-            
-            const scareImage = new Image();
-            scareImage.src = scareImageUrl + '?t=' + new Date().getTime();
-            scareImage.className = 'scare-image';
-            
-            scareOverlay.appendChild(scareImage);
-        }
-        
         // 触发惊吓效果
         function triggerScare() {
-            if (isScaring) return;
-            
-            isScaring = true;
-            
-            // 重置GIF播放
-            resetGifPlayback();
-            
             // 显示惊吓图片
             scareOverlay.style.display = 'flex';
             
             // 播放惊吓音频（音量最大）
             scareAudio.volume = 1.0;
             scareAudio.currentTime = 0;
-            
-            // 只有在用户已交互的情况下才尝试播放音频
-            if (userInteracted) {
-                const playPromise = scareAudio.play();
-                
-                if (playPromise !== undefined) {
-                    playPromise.catch(e => {
-                        console.log("音频播放失败:", e);
-                    });
-                }
-            }
+            scareAudio.play().catch(e => {
+                console.log("音频播放失败:", e);
+            });
             
             // 1.5秒后隐藏惊吓图片
             setTimeout(() => {
                 scareOverlay.style.display = 'none';
-                scareOverlay.innerHTML = '';
                 
+                // 停止音频
                 scareAudio.pause();
                 scareAudio.currentTime = 0;
-                
-                isScaring = false;
             }, 1500);
         }
         
-        // 用户交互处理
-        function handleUserInteraction() {
-            if (!userInteracted) {
-                userInteracted = true;
-                // 用户第一次交互后，可以播放音频
-                scareAudio.play().then(() => {
-                    scareAudio.pause();
-                    scareAudio.currentTime = 0;
-                }).catch(e => {
-                    console.log("首次音频播放测试失败:", e);
-                });
-            }
-        }
-        
         // 点击事件处理
-        function handleClick(event) {
-            if (!isLoaded) {
-                event.preventDefault();
-                event.stopPropagation();
-                return;
-            }
-            
-            // 标记用户已交互
-            handleUserInteraction();
+        function handleClick() {
+            // 增加点击计数
+            clickCount++;
+            clickCountElement.textContent = clickCount;
             
             // 切换网站标题
             changeSiteTitle();
@@ -421,56 +277,15 @@
             triggerScare();
         }
         
-        // 触摸事件处理（移动设备）
-        function handleTouch(event) {
-            if (!isLoaded) {
-                event.preventDefault();
-                return;
-            }
-            
-            // 标记用户已交互
-            handleUserInteraction();
-            
-            // 切换网站标题
-            changeSiteTitle();
-            
-            // 切换正常图片
-            changeNormalImage();
-            
-            // 触发惊吓效果
-            triggerScare();
-        }
-        
-        // 初始化页面
-        function initPage() {
-            // 设置音频
-            scareAudio.src = scareAudioUrl;
-            scareAudio.volume = 1.0;
-            
-            // 设置初始标题
-            changeSiteTitle();
-            
-            // 预加载素材
-            preloadAssets();
-            
-            // 添加事件监听
-            document.addEventListener('click', handleClick);
-            document.addEventListener('touchstart', handleTouch);
-            
-            // 添加用户交互监听，用于解锁音频自动播放
-            document.addEventListener('click', handleUserInteraction, { once: true });
-            document.addEventListener('touchstart', handleUserInteraction, { once: true });
-        }
+        // 添加点击事件监听
+        document.addEventListener('click', handleClick);
         
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', initPage);
         
-        // 防止下拉刷新
-        document.addEventListener('touchmove', function(e) {
-            if (e.touches.length > 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
+        // 确保音频在用户交互后可以播放
+        document.addEventListener('touchstart', function() {}, { once: true });
+        document.addEventListener('click', function() {}, { once: true });
     </script>
 </body>
 </html>
